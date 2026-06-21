@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Ram Garu ✨O.O</title>
+    <style>
+        :root {
+            --bg-color: #0a0a17;
+            --card-bg: rgba(20, 27, 45, 0.7);
+            --neon-cyan: #00f2fe;
+            --neon-purple: #9b51e0;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-light);
+            overflow: hidden; /* Prevents raw scrolling to keep the screen-by-screen pop-up effect perfect */
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Ambient Matrix/Star Effect Container */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Glassmorphism utility */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Floating Audio Player Widget */
+        .audio-widget {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 100;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .visualizer {
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 20px;
+        }
+
+        .bar {
+            width: 3px;
+            height: 5px;
+            background-color: var(--neon-cyan);
+            animation: bounce 0.8s ease infinite alternate;
+            animation-play-state: paused;
+        }
+
+        /* SCREEN SYSTEM: Controls the dynamic pop-up transition sequence */
+        .screen {
+            display: none;
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 25px 20px;
+            text-align: center;
+            overflow-y: auto;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        .screen.active {
+            display: flex;
+            opacity: 1;
+            z-index: 5;
+        }
+
+        /* Tom & Jerry Hero Screen Background Styling */
+        #screen-hero {
+            /* Replace the link below with your favorite local tom_and_jerry.jpg or online URL */
+            background: linear-gradient(rgba(10, 10, 23, 0.5), rgba(10, 10, 23, 0.9)), 
+                        url("us.jpeg") no-repeat center center/cover;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            background: linear-gradient(to right, var(--neon-cyan), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(0, 242, 254, 0.4);
+        }
+
+        h2 {
+            font-size: 2.3rem;
+            margin-bottom: 20px;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Interactive Navigation & Action Buttons */
+        .btn {
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+            color: #000;
+            font-weight: bold;
+            padding: 14px 35px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(155, 81, 224, 0.7);
+            color: #fff;
+        }
+
+        .btn-nav {
+            margin-top: 15px;
+            border: 1px solid var(--neon-cyan);
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--neon-cyan);
+        }
+
+        /* Reasons Box Layout */
+        .reasons-box {
+            padding: 40px;
+            margin: 20px auto;
+            width: 100%;
+            max-width: 600px;
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #reasonText {
+            font-size: 1.3rem;
+            font-style: italic;
+            margin-bottom: 25px;
+            color: #fff;
+            line-height: 1.6;
+        }
+
+        /* NEW: The container that keeps the box and GIF side-by-side */
+.reasons-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;          /* Adjust this to change the spacing between the box and the GIF */
+    width: 100%;
+    max-width: 950px;
+    margin: 15px auto;
+}
+
+/* Fixes the card's alignment inside the new side-by-side layout */
+.reasons-wrapper .reasons-box {
+    margin: 0; 
+}
+
+/* Controls the look and sizing of your GIF container */
+.side-gif-right {
+    width: 180px;       /* Keeps the GIF at a perfectly readable size on desktop */
+    height: auto;
+    flex-shrink: 0;     /* Prevents the image from getting squished */
+}
+
+.side-gif-right img {
+    width: 100%;
+    height: auto;
+    border-radius: 15px;
+}
+
+/* Responsive adjustment: Automatically stacks them vertically on smaller screens */
+@media (max-width: 850px) {
+    .reasons-wrapper {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .side-gif-right {
+        width: 140px;   /* Slightly smaller size for mobile screens */
+    }
+}
+
+        .side-gift-right {
+            position: absolute;
+            right: 8%;
+            top: 52%;
+            transform: translateY(-50%);
+            width: 160px;
+            height: auto;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .side-gif-right img {
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 8x 25px rgba(0, 0, 0, 0.4);
+        }
+
+        @media (max-width: 950px) {
+            .side-gif-right {
+                position: relative;
+                right: auto;
+                top: auto;
+                transform: none;
+                margin: 20px auto 0 auto;
+                width: 130px;
+            }
+        }
+
+        /* Dynamic Slideshow Component Container */
+        .slideshow-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 15px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .slide-frame {
+            width: auto;
+            height: 52vh;
+            aspect-ratio: 9 / 16;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #0d0d1f;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+        }
+
+        .slide-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        #slideCaption {
+            margin: 15px 0 10px 0;
+            font-size: 1.1rem;
+            color: var(--text-light);
+            min-height: 45px;
+            width: 85vw;
+            max-width: 420px;
+            padding: 0 10px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .slideshow-controls {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-top: 5px;
+        }
+
+        .slide-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .slide-btn:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            border-color: var(--neon-cyan);
+        }
+
+        #slideCounter {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        /* Pop-up Quiz Wrapper */
+        .quiz-box {
+            width: 100%;
+            max-width: 550px;
+            margin: 0 auto;
+            padding: 40px;
+            text-align: left;
+        }
+
+        .quiz-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 12px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            background: rgba(0, 242, 254, 0.1);
+            border-color: var(--neon-cyan);
+        }
+
+        /* Final Secret Letter Layout */
+        .letter-content {
+            padding: 40px;
+            width: 100%;
+            max-width: 650px;
+            margin: 0 auto;
+            text-align: left;
+            line-height: 1.9;
+            font-size: 1.1rem;
+            border-left: 4px solid var(--neon-cyan);
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        /* Keyframes */
+        @keyframes bounce {
+            0% { height: 5px; }
+            100% { height: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="audio-widget glass-card">
+        <div class="visualizer" id="visualizer">
+            <div class="bar" style="animation-delay: 0.1s;"></div>
+            <div class="bar" style="animation-delay: 0.4s;"></div>
+            <div class="bar" style="animation-delay: 0.2s;"></div>
+            <div class="bar" style="animation-delay: 0.6s;"></div>
+        </div>
+        <button onclick="toggleAudio()" id="audioBtn" style="background:transparent; border:none; color:var(--neon-cyan); cursor:pointer; font-weight:bold;">PLAY MUSIC 🎵</button>
+        <audio id="bgMusic" src="WhatsApp Audio 2026-06-21 at 5.24.45 PM.mpeg" loop></audio>
+    </div>
+
+    <header id="screen-hero" class="screen active">
+        <h1>To Someone Beyond Special ✨</h1>
+        <p style="margin-bottom: 30px; font-size: 1.3rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">Happy Birthday Ram Garu! 🐱🐭</p>
+        <button class="btn" onclick="navigateToScreen('screen-reasons')">Begin the Journey</button>
+    </header>
+
+    <section id="screen-reasons" class="screen">
+        <h2>Reasons You Hold a Unique Place in My Life 💡</h2>
+        <div class="glass-card reasons-box">
+            <p id="reasonText">"Click the action button below to find out why you mean so much to me..."</p>
+            <button class="btn" onclick="nextReason()">Reveal Next Reason 👉</button>
+        </div>
+
+        <div class="side-gif-right">
+            <img src="https://media.tenor.com/fFpVFqD_4esAAAAm/peluk.webp" alt="Tom and jerry Dynamic Graphic">
+        </div>
+
+        <button class="btn btn-nav" onclick="navigateToScreen('screen-gallery')">Continue to Memories 📷</button>
+    </section>
+
+    <section id="screen-gallery" class="screen">
+        <h2>Our Unforgettable Highlights 📷</h2>
+        <div class="glass-card slideshow-container">
+            <div class="slide-frame">
+                <img id="slideshowImg" src="" alt="Memory Lane">
+            </div>
+            <p id="slideCaption"></p>
+            <div class="slideshow-controls">
+                <button class="slide-btn" onclick="moveSlide(-1)">◀</button>
+                <span id="slideCounter">1 / 28</span>
+                <button class="slide-btn" onclick="moveSlide(1)">▶</button>
+            </div>
+        </div>
+        <button class="btn btn-nav" onclick="navigateToScreen('screen-quiz')">Unlock My Secret Envelope 🔏</button>
+     </section>
+
+    <section id="screen-quiz" class="screen">
+        <h2>Prove It's Truly You! 🔏</h2>
+        <p style="color: var(--text-muted); margin-bottom: 25px;">Answer correctly to reveal the personal birthday letter</p>
+        <div class="glass-card quiz-box" id="quizContainer">
+            <h3 style="margin-bottom: 20px; color: var(--neon-cyan);">Choose the correct phrase that defines us best:</h3>
+            <div id="optionsContainer">
+                </div>
+        </div>
+      </section>
+
+      <section id="screen-letter" class="screen">
+        <h2>Unlocked Message For You ✉️</h2>
+        <div class="glass-card letter-content">
+            <p>Hey,</p><br>
+            <p>You passed the test! But truth be told, you always pass with flying colors when it comes to being there for me. I wanted to design something totally unique for you because simple words just aren't enough to capture how grateful I am to have you in my life.</p><br>
+            <p>You are effortlessly so much more than just a friend. You are my safe space, my favorite couch to sleep on, my favorite notification, and the person who brings smile on my face and jenuine joy into my day-to-day life. Thank you for listening, for understanding evi ani joke anukoku evaru ardham chesukonivi nuvu ardham chesukuntavu, na stupid jokes ki navvuthavu.</p><br>
+            <p>I hope this year ahead treats you with the exact same kindness, excitement and greatness that you project into the world every single day. And i hope this year be very great for you and give you lots of happines. Happiest Birthday Nannalu! 💖 </p>
+        </div>
+       </section>
+
+       <script>
+        // 1. DYNAMIC NAVIGATION CONTROLLER (Multi-Screen Manager)
+        function navigateToScreen(targetScreenId) {
+            const activeScreen = document.querySelector('.screen.active');
+            const targetScreen = document.getElementById(targetScreenId);
+            
+            if (activeScreen && targetScreen) {
+                activeScreen.style.opacity = '0';
+                setTimeout(() => {
+                    activeScreen.classList.remove('active');
+                    targetScreen.classList.add('active');
+                    setTimeout(() => {
+                        targetScreen.style.opacity = '1';
+                    }, 50);
+                }, 400); // Fades old screens out before launching new items
+            }
+        }
+
+        // 2. AUDIO PLAYER SYSTEM
+        const audio = document.getElementById("bgMusic");
+        const bars = document.querySelectorAll(".bar");
+        function toggleAudio() {
+            if (audio.paused) {
+                audio.play().catch(e => console.log("Audio play blocked until interaction."));
+                document.getElementById("audioBtn").innerText = "PAUSE MUSIC ⏸️";
+                bars.forEach(bar => bar.style.animationPlayState = "running");
+            } else {
+                audio.pause();
+                document.getElementById("audioBtn").innerText = "PLAY MUSIC 🎵";
+                bars.forEach(bar => bar.style.animationPlayState = "paused");
+            }
+        }
+            
+        // 3. REASONS ITERATOR DATABASE
+        const reasons = [
+            "Your laugh is so sweet which instantly brightens my mood. ☀️",
+            "You have this amazing ability to make me feel completely heard and understood.",
+            "You support my wild dreams, side projects, and creative things which are silly but u support without judgment. 🎨",
+            "You bring an energy into my life that is reeplaceable-no one else comes close.",
+            "Our endless midnight conversation are literally my favorite part of the week. 🌃",
+            "I know you love talking calls kani chat prefer chestha nenu because if matldatha unte time theyliyadu nanna u have to sleep andhuke",
+            "Gurthu undha exams time lo oka sari call matldukunamu time aa theyliyaledhu",
+            "it's beacue i know we can't stop talking"
+        ];
+        let currentReasonIdx = -1;
+        function nextReason() {
+            currentReasonIdx = (currentReasonIdx + 1) % reasons.length;
+            const textElement = document.getElementById("reasonText");
+            if (textElement) {
+                textElement.innerText = `"${reasons[currentReasonIdx]}"`;
+            }
+        }
+
+        // 4. MEGA SLIDESHOW DRIVER (Houses 20 items smoothly)
+        const galleryData = [
+            { src: "img1.jpeg", desc: "The time shared where hours felt like seconds." },
+            { src: "img2.jpeg", desc: "The random inside jokes that never get old." },
+            { src: "img3.jpeg", desc: "The way you look at me." },
+            { src: "img4.jpeg", desc: "Our unforgettable deep midnight conversations." },
+            { src: "img5.jpeg", desc: "Supporting all my wild and crazy ideas without judgment." },
+            { src: "img6.jpeg", desc: "Making everyday exam stress totally vanish into thin air." },
+            { src: "img7.jpeg", desc: "When we lost track of time entirely on our late phone calls." },
+            { src: "img8.jpeg", desc: "Your smile that instantly fixes my worst moods." },
+            { src: "img9.jpeg", desc: "The best companion anyone could ever ask for in life." },
+            { src: "img10.jpeg", desc: "Every tiny little detail you manage to remember about me." },
+            { src: "img11.jpeg", desc: "For always understanding exactly what goes completely unsaid." },
+            { src: "img12.jpeg", desc: "The quiet, shared silences that feel incredibly safe." },
+            { src: "img13.jpeg", desc: "Being my absolute constant anchor amidst daily college chaos." },
+            { src: "img14.jpeg", desc: "Laughing endlessly at completely random and stupid jokes." },
+            { src: "img15.jpeg", desc: "Your completely irreplaceable vibe and calming energy." },
+            { src: "img16.jpeg", desc: "Those comforting texts precisely when I need to see them most." },
+            { src: "img17.jpeg", desc: "For being uniquely, beautifully, and effortlessly just you." },
+            { src: "img18.jpeg", desc: "Every simple little memory that quietly turned into a massive highlight." },
+            { src: "img19.jpeg", desc: "For bringing absolute genuine happiness to my days." },
+            { src: "img20.jpeg", desc: "And for infinitely more milestones yet to come together! ✨" },
+
+            { src: "img21.jpeg", desc: "Celebrating your presence today and every single day after."},
+            { src: "img22.jpeg", desc: "For all the times you made me laugh until my stomach hurt."},
+            { src: "img23.jpeg", desc: "My absolute favorite person to share good news with first."},
+            { src: "img24.jpeg", desc: "No matter how busy or chaotic life gets, some connections never fade like ours."},
+            { src: "img25.jpeg", desc: "Thank you for matching my crazy energy levels perfrectly every single time."},
+            { src: "img26.jpeg", desc: "Every little moment with you is a memory I hold close to my heart. 💖"},
+            { src: "img27.jpeg", desc: "To the person who knows my silliest traits and still stays around."},
+            { src: "img28.jpeg", desc: "Wishing you the absolute happiest birthday ever! 🎂🌟"}
+        ];
+
+        let currentSlideIdx = 0;
+        function updateSlideshow() {
+            const imgEl = document.getElementById("slideshowImg");
+            const capEl = document.getElementById("slideCaption");
+            const cntEl = document.getElementById("slideCounter");
+            
+            imgEl.style.opacity = '0.3';
+            setTimeout(() => {
+                imgEl.src = galleryData[currentSlideIdx].src;
+                capEl.innerText = galleryData[currentSlideIdx].desc;
+                cntEl.innerText = `${currentSlideIdx + 1} / ${galleryData.length}`;
+                imgEl.style.opacity = '1';
+            }, 200);
+        }
+        
+        function moveSlide(direction) {
+            currentSlideIdx = (currentSlideIdx + direction + galleryData.length) % galleryData.length;
+            updateSlideshow();
+        }
+        // Initialize the slideshow frame tracking on execution
+        updateSlideshow();
+
+        // 5. QUIZ ENGINE
+        const quizData = {
+            options: [
+                "Just casual friends",
+                "Regular college classmates",
+                "Partners in crime and infinitely more than friends ✨",
+                "Your fav person to talk",
+                "Ni Charithamma 💝",
+                "People who talk occasionally"
+            ],
+            correctIdx: 4
+        };
+
+        function loadQuiz() {
+            const container = document.getElementById("optionsContainer");
+            if (!container) return;
+            container.innerHTML = "";
+            quizData.options.forEach((opt, idx) => {
+                const div = document.createElement("div");
+                div.classList.add("quiz-option");
+                div.innerText = opt;
+                div.onclick = () => checkAnswer(idx);
+                container.appendChild(div);
+            });
+        }
+
+        function checkAnswer(selectedIdx) {
+            if(selectedIdx === quizData.correctIdx) {
+                navigateToScreen('screen-letter');
+            } else {
+                alert("Nice try! But think deeper about what we truly mean to each other... 🫣");
+            }
+        }
+        loadQuiz();
+
+        // 6. BACKGROUND AMBIENT SPACE PARTICLES
+        const canvas = document.getElementById("particleCanvas");
+        if (canvas){
+            const ctx = canvas.getContext("2d");
+            let particles = [];
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener("resize", resizeCanvas);
+            resizeCanvas();
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 2 + 0.5;
+                    this.speedY = Math.random() * -0.4 -0.1;
+                    this.alpha = Math.random() * 0.5 * 0.2;
+                }
+                update() {
+                    this.y += this.speedY;
+                    if (this.y < 0){
+                        this.y = canvas.height;
+                        this.x = Math.random() * canvas.width;
+                    }
+                }
+                draw() {
+                    ctx.fillstyle = `rgba(0, 242, 254, ${this.alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < 60; i++) { particles.push(new Particle()); }
+            function animationParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(animateParticles);
+            }
+            animateParticles();
+        }
+        </script>
+</body>
+</html>
